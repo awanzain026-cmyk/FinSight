@@ -18,6 +18,37 @@ export interface CategoryData {
   value: number;
 }
 
+export interface InventoryItem {
+  id: string;
+  name: string;
+  sku: string;
+  quantity: number;
+  unitCost: number;
+  category: string;
+}
+
+export interface Receivable {
+  id: string;
+  customerName: string;
+  invoiceNumber: string;
+  amount: number;
+  paidAmount: number;
+  issueDate: string;
+  dueDate: string;
+  status: "pending" | "partial" | "paid";
+}
+
+export interface Payable {
+  id: string;
+  vendorName: string;
+  billNumber: string;
+  amount: number;
+  paidAmount: number;
+  issueDate: string;
+  dueDate: string;
+  status: "pending" | "partial" | "paid";
+}
+
 export const INCOME_CATEGORIES = [
   "Sales",
   "Services",
@@ -35,4 +66,12 @@ export const EXPENSE_CATEGORIES = [
   "Software",
   "Travel",
   "Other Expense",
+];
+
+export const INVENTORY_CATEGORIES = [
+  "Raw Materials",
+  "Finished Goods",
+  "Office Supplies",
+  "Merchandise",
+  "Equipment",
 ];

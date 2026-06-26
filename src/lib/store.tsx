@@ -10,31 +10,104 @@ import React, {
   type ReactNode,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
-import type { Entry, MonthlyData, CategoryData } from "./types";
+import type {
+  Entry,
+  MonthlyData,
+  CategoryData,
+  InventoryItem,
+  Receivable,
+  Payable,
+} from "./types";
 
 interface State {
   entries: Entry[];
+  inventory: InventoryItem[];
+  receivables: Receivable[];
+  payables: Payable[];
 }
 
 type Action =
   | { type: "ADD_ENTRY"; payload: Entry }
   | { type: "DELETE_ENTRY"; payload: string }
-  | { type: "LOAD_ENTRIES"; payload: Entry[] };
+  | { type: "LOAD_ENTRIES"; payload: Entry[] }
+  | { type: "ADD_INVENTORY"; payload: InventoryItem }
+  | { type: "UPDATE_INVENTORY"; payload: InventoryItem }
+  | { type: "DELETE_INVENTORY"; payload: string }
+  | { type: "LOAD_INVENTORY"; payload: InventoryItem[] }
+  | { type: "ADD_RECEIVABLE"; payload: Receivable }
+  | { type: "UPDATE_RECEIVABLE"; payload: Receivable }
+  | { type: "DELETE_RECEIVABLE"; payload: string }
+  | { type: "LOAD_RECEIVABLES"; payload: Receivable[] }
+  | { type: "ADD_PAYABLE"; payload: Payable }
+  | { type: "UPDATE_PAYABLE"; payload: Payable }
+  | { type: "DELETE_PAYABLE"; payload: string }
+  | { type: "LOAD_PAYABLES"; payload: Payable[] };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "ADD_ENTRY":
-      return { entries: [action.payload, ...state.entries] };
+      return { ...state, entries: [action.payload, ...state.entries] };
     case "DELETE_ENTRY":
       return {
+        ...state,
         entries: state.entries.filter((e) => e.id !== action.payload),
       };
     case "LOAD_ENTRIES":
-      return { entries: action.payload };
+      return { ...state, entries: action.payload };
+    case "ADD_INVENTORY":
+      return { ...state, inventory: [...state.inventory, action.payload] };
+    case "UPDATE_INVENTORY":
+      return {
+        ...state,
+        inventory: state.inventory.map((i) =>
+          i.id === action.payload.id ? action.payload : i
+        ),
+      };
+    case "DELETE_INVENTORY":
+      return {
+        ...state,
+        inventory: state.inventory.filter((i) => i.id !== action.payload),
+      };
+    case "LOAD_INVENTORY":
+      return { ...state, inventory: action.payload };
+    case "ADD_RECEIVABLE":
+      return { ...state, receivables: [...state.receivables, action.payload] };
+    case "UPDATE_RECEIVABLE":
+      return {
+        ...state,
+        receivables: state.receivables.map((r) =>
+          r.id === action.payload.id ? action.payload : r
+        ),
+      };
+    case "DELETE_RECEIVABLE":
+      return {
+        ...state,
+        receivables: state.receivables.filter((r) => r.id !== action.payload),
+      };
+    case "LOAD_RECEIVABLES":
+      return { ...state, receivables: action.payload };
+    case "ADD_PAYABLE":
+      return { ...state, payables: [...state.payables, action.payload] };
+    case "UPDATE_PAYABLE":
+      return {
+        ...state,
+        payables: state.payables.map((p) =>
+          p.id === action.payload.id ? action.payload : p
+        ),
+      };
+    case "DELETE_PAYABLE":
+      return {
+        ...state,
+        payables: state.payables.filter((p) => p.id !== action.payload),
+      };
+    case "LOAD_PAYABLES":
+      return { ...state, payables: action.payload };
     default:
       return state;
   }
 }
+
+const STORAGE_PREFIX = "finsight_";
 
 interface StoreContextValue {
   entries: Entry[];
@@ -47,102 +120,210 @@ interface StoreContextValue {
   monthlyData: MonthlyData[];
   categoryData: CategoryData[];
   entryCount: number;
+
+  inventory: InventoryItem[];
+  addInventoryItem: (item: Omit<InventoryItem, "id">) => void;
+  updateInventoryItem: (item: InventoryItem) => void;
+  deleteInventoryItem: (id: string) => void;
+  totalInventoryValue: number;
+
+  receivables: Receivable[];
+  addReceivable: (r: Omit<Receivable, "id">) => void;
+  updateReceivable: (r: Receivable) => void;
+  deleteReceivable: (id: string) => void;
+  totalReceivablesOutstanding: number;
+
+  payables: Payable[];
+  addPayable: (p: Omit<Payable, "id">) => void;
+  updatePayable: (p: Payable) => void;
+  deletePayable: (id: string) => void;
+  totalPayablesOutstanding: number;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
-const STORAGE_KEY = "finsight_entries";
+function loadFromStorage<T>(key: string, fallback: T): T {
+  try {
+    const stored = localStorage.getItem(STORAGE_PREFIX + key);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return fallback;
+}
+
+function saveToStorage(key: string, data: unknown) {
+  try {
+    localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data));
+  } catch {}
+}
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, { entries: [] });
+  const [state, dispatch] = useReducer(reducer, {
+    entries: [],
+    inventory: [],
+    receivables: [],
+    payables: [],
+  });
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as Entry[];
-        dispatch({ type: "LOAD_ENTRIES", payload: parsed });
-      }
-    } catch {
-      // ignore
-    }
+    const entries = loadFromStorage<Entry[]>("entries", []);
+    if (entries.length) dispatch({ type: "LOAD_ENTRIES", payload: entries });
+    const inv = loadFromStorage<InventoryItem[]>("inventory", []);
+    if (inv.length) dispatch({ type: "LOAD_INVENTORY", payload: inv });
+    const recv = loadFromStorage<Receivable[]>("receivables", []);
+    if (recv.length) dispatch({ type: "LOAD_RECEIVABLES", payload: recv });
+    const pay = loadFromStorage<Payable[]>("payables", []);
+    if (pay.length) dispatch({ type: "LOAD_PAYABLES", payload: pay });
   }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
-    } catch {
-      // ignore
-    }
+    saveToStorage("entries", state.entries);
   }, [state.entries]);
 
-  const addEntry = useCallback((entry: Omit<Entry, "id">) => {
-    dispatch({
-      type: "ADD_ENTRY",
-      payload: { ...entry, id: uuidv4() },
-    });
-  }, []);
+  useEffect(() => {
+    saveToStorage("inventory", state.inventory);
+  }, [state.inventory]);
 
-  const deleteEntry = useCallback((id: string) => {
-    dispatch({ type: "DELETE_ENTRY", payload: id });
-  }, []);
+  useEffect(() => {
+    saveToStorage("receivables", state.receivables);
+  }, [state.receivables]);
 
-  const { totalIncome, totalExpenses, netProfit, profitMargin, monthlyData, categoryData, entryCount } =
-    useMemo(() => {
-      const entries = state.entries;
+  useEffect(() => {
+    saveToStorage("payables", state.payables);
+  }, [state.payables]);
 
-      let income = 0;
-      let expenses = 0;
-      const monthlyMap: Record<string, { income: number; expenses: number }> = {};
-      const categoryMap: Record<string, number> = {};
+  const addEntry = useCallback(
+    (entry: Omit<Entry, "id">) =>
+      dispatch({ type: "ADD_ENTRY", payload: { ...entry, id: uuidv4() } }),
+    []
+  );
 
-      for (const entry of entries) {
-        if (entry.type === "income") {
-          income += entry.amount;
-        } else {
-          expenses += entry.amount;
-        }
+  const deleteEntry = useCallback(
+    (id: string) => dispatch({ type: "DELETE_ENTRY", payload: id }),
+    []
+  );
 
-        const month = entry.date.slice(0, 7);
-        if (!monthlyMap[month]) {
-          monthlyMap[month] = { income: 0, expenses: 0 };
-        }
-        if (entry.type === "income") {
-          monthlyMap[month].income += entry.amount;
-        } else {
-          monthlyMap[month].expenses += entry.amount;
-        }
+  const addInventoryItem = useCallback(
+    (item: Omit<InventoryItem, "id">) =>
+      dispatch({ type: "ADD_INVENTORY", payload: { ...item, id: uuidv4() } }),
+    []
+  );
 
-        if (entry.type === "expense") {
-          categoryMap[entry.category] = (categoryMap[entry.category] || 0) + entry.amount;
-        }
-      }
+  const updateInventoryItem = useCallback(
+    (item: InventoryItem) =>
+      dispatch({ type: "UPDATE_INVENTORY", payload: item }),
+    []
+  );
 
-      const net = income - expenses;
-      const margin = income > 0 ? (net / income) * 100 : 0;
+  const deleteInventoryItem = useCallback(
+    (id: string) => dispatch({ type: "DELETE_INVENTORY", payload: id }),
+    []
+  );
 
-      const monthly: MonthlyData[] = Object.entries(monthlyMap)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([month, data]) => ({
-          month,
-          income: data.income,
-          expenses: data.expenses,
-        }));
+  const addReceivable = useCallback(
+    (r: Omit<Receivable, "id">) =>
+      dispatch({ type: "ADD_RECEIVABLE", payload: { ...r, id: uuidv4() } }),
+    []
+  );
 
-      const category: CategoryData[] = Object.entries(categoryMap)
-        .sort(([, a], [, b]) => b - a)
-        .map(([name, value]) => ({ name, value }));
+  const updateReceivable = useCallback(
+    (r: Receivable) => dispatch({ type: "UPDATE_RECEIVABLE", payload: r }),
+    []
+  );
 
-      return {
-        totalIncome: income,
-        totalExpenses: expenses,
-        netProfit: net,
-        profitMargin: margin,
-        monthlyData: monthly,
-        categoryData: category,
-        entryCount: entries.length,
-      };
-    }, [state.entries]);
+  const deleteReceivable = useCallback(
+    (id: string) => dispatch({ type: "DELETE_RECEIVABLE", payload: id }),
+    []
+  );
+
+  const addPayable = useCallback(
+    (p: Omit<Payable, "id">) =>
+      dispatch({ type: "ADD_PAYABLE", payload: { ...p, id: uuidv4() } }),
+    []
+  );
+
+  const updatePayable = useCallback(
+    (p: Payable) => dispatch({ type: "UPDATE_PAYABLE", payload: p }),
+    []
+  );
+
+  const deletePayable = useCallback(
+    (id: string) => dispatch({ type: "DELETE_PAYABLE", payload: id }),
+    []
+  );
+
+  const {
+    totalIncome,
+    totalExpenses,
+    netProfit,
+    profitMargin,
+    monthlyData,
+    categoryData,
+    entryCount,
+    totalInventoryValue,
+    totalReceivablesOutstanding,
+    totalPayablesOutstanding,
+  } = useMemo(() => {
+    let income = 0;
+    let expenses = 0;
+    const monthlyMap: Record<string, { income: number; expenses: number }> = {};
+    const categoryMap: Record<string, number> = {};
+
+    for (const entry of state.entries) {
+      if (entry.type === "income") income += entry.amount;
+      else expenses += entry.amount;
+
+      const month = entry.date.slice(0, 7);
+      if (!monthlyMap[month]) monthlyMap[month] = { income: 0, expenses: 0 };
+      if (entry.type === "income")
+        monthlyMap[month].income += entry.amount;
+      else monthlyMap[month].expenses += entry.amount;
+
+      if (entry.type === "expense")
+        categoryMap[entry.category] =
+          (categoryMap[entry.category] || 0) + entry.amount;
+    }
+
+    const net = income - expenses;
+    const margin = income > 0 ? (net / income) * 100 : 0;
+
+    const monthly: MonthlyData[] = Object.entries(monthlyMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, data]) => ({
+        month: month.slice(5),
+        income: data.income,
+        expenses: data.expenses,
+      }));
+
+    const category: CategoryData[] = Object.entries(categoryMap)
+      .sort(([, a], [, b]) => b - a)
+      .map(([name, value]) => ({ name, value }));
+
+    const invVal = state.inventory.reduce(
+      (sum, i) => sum + i.quantity * i.unitCost,
+      0
+    );
+    const recvOut = state.receivables.reduce(
+      (sum, r) => sum + (r.amount - r.paidAmount),
+      0
+    );
+    const payOut = state.payables.reduce(
+      (sum, p) => sum + (p.amount - p.paidAmount),
+      0
+    );
+
+    return {
+      totalIncome: income,
+      totalExpenses: expenses,
+      netProfit: net,
+      profitMargin: margin,
+      monthlyData: monthly,
+      categoryData: category,
+      entryCount: state.entries.length,
+      totalInventoryValue: invVal,
+      totalReceivablesOutstanding: recvOut,
+      totalPayablesOutstanding: payOut,
+    };
+  }, [state]);
 
   return (
     <StoreContext.Provider
@@ -157,6 +338,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         monthlyData,
         categoryData,
         entryCount,
+
+        inventory: state.inventory,
+        addInventoryItem,
+        updateInventoryItem,
+        deleteInventoryItem,
+        totalInventoryValue,
+
+        receivables: state.receivables,
+        addReceivable,
+        updateReceivable,
+        deleteReceivable,
+        totalReceivablesOutstanding,
+
+        payables: state.payables,
+        addPayable,
+        updatePayable,
+        deletePayable,
+        totalPayablesOutstanding,
       }}
     >
       {children}
@@ -166,8 +365,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
 export function useStore() {
   const ctx = useContext(StoreContext);
-  if (!ctx) {
-    throw new Error("useStore must be used within StoreProvider");
-  }
+  if (!ctx) throw new Error("useStore must be used within StoreProvider");
   return ctx;
 }
