@@ -48,7 +48,8 @@ type Action =
   | { type: "LOAD_PAYABLES"; payload: Payable[] }
   | { type: "SET_CURRENCY"; payload: CurrencyCode }
   | { type: "SET_LOADING"; payload: boolean }
-  | { type: "LOAD_DEMO"; payload: { entries: Entry[]; inventory: InventoryItem[]; receivables: Receivable[]; payables: Payable[] } };
+  | { type: "LOAD_DEMO"; payload: { entries: Entry[]; inventory: InventoryItem[]; receivables: Receivable[]; payables: Payable[] } }
+  | { type: "CLEAR_ALL" };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -88,6 +89,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, loading: action.payload };
     case "LOAD_DEMO":
       return { ...state, ...action.payload };
+    case "CLEAR_ALL":
+      return { ...state, entries: [], inventory: [], receivables: [], payables: [] };
     default:
       return state;
   }
@@ -130,6 +133,7 @@ interface StoreContextValue {
   formatAmount: (amount: number, decimals?: number) => string;
   loading: boolean;
   loadDemoData: () => void;
+  clearAllData: () => void;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
@@ -216,6 +220,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }, 600);
   }, []);
 
+  const clearAllData = useCallback(() => dispatch({ type: "CLEAR_ALL" }), []);
+
   const computed = useMemo(() => {
     let income = 0;
     let expenses = 0;
@@ -294,6 +300,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         formatAmount,
         loading: state.loading,
         loadDemoData,
+        clearAllData,
       }}
     >
       {children}

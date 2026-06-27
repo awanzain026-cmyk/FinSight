@@ -39,7 +39,7 @@ export function MonthlyBarChart() {
   const data = useMemo(
     () =>
       monthlyData.map((d) => ({
-        month: d.month.slice(5),
+        month: d.month,
         Income: d.income,
         Expenses: d.expenses,
       })),

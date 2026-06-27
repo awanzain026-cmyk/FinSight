@@ -112,7 +112,7 @@ export default function LandingPage() {
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
               <Link
-                href="/dashboard"
+                href="/dashboard?demo=1"
                 className="px-8 py-3.5 bg-accent hover:bg-accent-hover text-white font-medium rounded-xl text-base transition-all glow"
               >
                 Try Live Demo

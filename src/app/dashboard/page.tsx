@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import DataEntryForm from "@/components/DataEntryForm";
 import ProfitCard from "@/components/ProfitCard";
@@ -81,6 +83,21 @@ function SummaryCards() {
   );
 }
 
+function AutoLoadDemo() {
+  const { loadDemoData, entryCount } = useStore();
+  const searchParams = useSearchParams();
+  const triggered = useRef(false);
+
+  useEffect(() => {
+    if (searchParams.get("demo") === "1" && entryCount === 0 && !triggered.current) {
+      triggered.current = true;
+      loadDemoData();
+    }
+  }, [searchParams, entryCount, loadDemoData]);
+
+  return null;
+}
+
 export default function DashboardPage() {
   return (
     <motion.div
@@ -88,6 +105,7 @@ export default function DashboardPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
     >
+      <Suspense fallback={null}><AutoLoadDemo /></Suspense>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <motion.h1

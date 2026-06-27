@@ -168,7 +168,7 @@ export default function StatementsPage() {
                     netProfit >= 0 ? "text-success" : "text-danger"
                   }`}
                 >
-                  ${netProfit.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(netProfit, 2)}
                 </span>
               </div>
             </div>

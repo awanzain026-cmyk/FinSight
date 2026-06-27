@@ -129,7 +129,7 @@ export default function InventoryPage() {
               </div>
               <div>
                 <label className="block text-sm text-muted mb-1">
-                  Unit Cost ($)
+                  Unit Cost
                 </label>
                 <input
                   type="number"
@@ -241,7 +241,7 @@ export default function InventoryPage() {
                       <td className="py-3 pr-3 text-white/60 text-xs whitespace-nowrap">{item.category}</td>
                       <td className="py-3 pr-3 text-right text-white/80">{item.quantity}</td>
                       <td className="py-3 pr-3 text-right text-muted hidden sm:table-cell">
-                        ${item.unitCost.toFixed(2)}
+                        {formatAmount(item.unitCost, 2)}
                       </td>
                       <td className="py-3 pr-3 text-right text-success font-medium">
                         {formatAmount(item.quantity * item.unitCost, 2)}
