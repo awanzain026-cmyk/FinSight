@@ -13,6 +13,7 @@ export default function InventoryPage() {
     updateInventoryItem,
     deleteInventoryItem,
     totalInventoryValue,
+    formatAmount,
   } = useStore();
 
   const [name, setName] = useState("");
@@ -202,7 +203,7 @@ export default function InventoryPage() {
               <div className="text-center">
                 <p className="text-xs text-muted">Total Value</p>
                 <p className="text-success font-semibold">
-                  ${totalInventoryValue.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(totalInventoryValue, 2)}
                 </p>
               </div>
             </div>
@@ -243,7 +244,7 @@ export default function InventoryPage() {
                         ${item.unitCost.toFixed(2)}
                       </td>
                       <td className="py-3 pr-3 text-right text-success font-medium">
-                        ${(item.quantity * item.unitCost).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        {formatAmount(item.quantity * item.unitCost, 2)}
                       </td>
                       <td className="py-3 text-right">
                         <div className="flex gap-1 justify-end">

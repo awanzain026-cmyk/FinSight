@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useStore } from "@/lib/store";
 
 export default function DataTable() {
-  const { entries, deleteEntry } = useStore();
+  const { entries, deleteEntry, formatAmount } = useStore();
 
   if (entries.length === 0) {
     return (
@@ -99,10 +99,7 @@ export default function DataTable() {
                     entry.type === "income" ? "text-success" : "text-danger"
                   }`}
                 >
-                  {entry.type === "income" ? "+" : "-"}$
-                  {entry.amount.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
+                  {entry.type === "income" ? "+" : "-"}{formatAmount(entry.amount, 2)}
                 </td>
                 <td className="py-3 text-right">
                   <button

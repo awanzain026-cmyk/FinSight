@@ -28,6 +28,11 @@ const COLORS = [
   "#14b8a6",
 ];
 
+function currencyTick(value: number) {
+  if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+  return value.toString();
+}
+
 export function MonthlyBarChart() {
   const { monthlyData } = useStore();
 
@@ -72,6 +77,7 @@ export function MonthlyBarChart() {
                 tick={{ fill: "#94a3b8", fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
+                tickFormatter={currencyTick}
               />
               <Tooltip
                 contentStyle={{

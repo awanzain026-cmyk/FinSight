@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import CurrencySelector from "./CurrencySelector";
 
 const navItems = [
   {
@@ -85,11 +86,12 @@ export default function Sidebar() {
             `}
           >
             <div className="w-64 h-full flex flex-col">
-              <div className="flex items-center gap-2.5 px-6 h-16 border-b border-white/5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-purple-400 flex items-center justify-center text-white font-bold text-sm">
-                  F
+              <div className="flex items-center gap-2 px-6 h-16 border-b border-white/5">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-purple-400 flex items-center justify-center text-white font-bold text-sm">F</div>
+                <div className="flex flex-col leading-tight">
+                  <span className="text-base font-bold text-white tracking-tight">FinSight</span>
+                  <span className="text-[10px] text-accent font-medium tracking-wider uppercase">Dashboard</span>
                 </div>
-                <span className="text-lg font-semibold text-white">FinSight</span>
               </div>
 
               <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
@@ -116,9 +118,12 @@ export default function Sidebar() {
                 })}
               </nav>
 
-              <div className="px-6 py-4 border-t border-white/5">
-                <p className="text-xs text-muted">Financial Dashboard</p>
-                <p className="text-xs text-muted/60">v1.0</p>
+              <div className="px-6 py-4 border-t border-white/5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted">Currency</p>
+                  <CurrencySelector />
+                </div>
+                <p className="text-xs text-muted/60">FinSight v1.0</p>
               </div>
             </div>
           </motion.aside>

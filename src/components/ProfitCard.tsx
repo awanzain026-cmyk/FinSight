@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useStore } from "@/lib/store";
 
 export default function ProfitCard() {
-  const { totalIncome, totalExpenses, netProfit, profitMargin, entryCount } =
+  const { totalIncome, totalExpenses, netProfit, profitMargin, entryCount, formatAmount } =
     useStore();
 
   const isProfit = netProfit >= 0;
@@ -26,7 +26,7 @@ export default function ProfitCard() {
             Income
           </p>
           <p className="text-xl font-bold text-success">
-            +${totalIncome.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            +{formatAmount(totalIncome, 2)}
           </p>
         </div>
         <div>
@@ -34,7 +34,7 @@ export default function ProfitCard() {
             Expenses
           </p>
           <p className="text-xl font-bold text-danger">
-            -${totalExpenses.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            -{formatAmount(totalExpenses, 2)}
           </p>
         </div>
       </div>
@@ -47,8 +47,7 @@ export default function ProfitCard() {
               isProfit ? "text-success" : "text-danger"
             }`}
           >
-            {isProfit ? "+" : ""}$
-            {netProfit.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            {isProfit ? "+" : ""}{formatAmount(Math.abs(netProfit), 2)}
           </span>
         </div>
         <div className="flex items-baseline justify-between mt-1">

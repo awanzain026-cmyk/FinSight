@@ -5,7 +5,7 @@ import { useStore } from "@/lib/store";
 import { useMemo } from "react";
 
 export default function StatementsPage() {
-  const { entries, totalIncome, totalExpenses, netProfit, profitMargin } =
+  const { entries, totalIncome, totalExpenses, netProfit, profitMargin, formatAmount } =
     useStore();
 
   const { incomeByCategory, expenseByCategory } = useMemo(() => {
@@ -68,7 +68,7 @@ export default function StatementsPage() {
                   >
                     <span className="text-white/70">{cat}</span>
                     <span className="text-success font-medium">
-                      ${amt.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      {formatAmount(amt, 2)}
                     </span>
                   </div>
                 ))
@@ -76,7 +76,7 @@ export default function StatementsPage() {
               <div className="flex justify-between py-2 mt-1 border-t border-white/10 font-medium">
                 <span className="text-white">Total Revenue</span>
                 <span className="text-success">
-                  ${totalIncome.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(totalIncome, 2)}
                 </span>
               </div>
             </div>
@@ -95,7 +95,7 @@ export default function StatementsPage() {
                   >
                     <span className="text-white/70">{cat}</span>
                     <span className="text-danger font-medium">
-                      ${amt.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      {formatAmount(amt, 2)}
                     </span>
                   </div>
                 ))
@@ -103,7 +103,7 @@ export default function StatementsPage() {
               <div className="flex justify-between py-2 mt-1 border-t border-white/10 font-medium">
                 <span className="text-white">Total Expenses</span>
                 <span className="text-danger">
-                  ${totalExpenses.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(totalExpenses, 2)}
                 </span>
               </div>
             </div>
@@ -116,7 +116,7 @@ export default function StatementsPage() {
                     netProfit >= 0 ? "text-success" : "text-danger"
                   }`}
                 >
-                  ${netProfit.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(netProfit, 2)}
                 </span>
               </div>
               <div className="flex justify-between py-1">
@@ -158,7 +158,7 @@ export default function StatementsPage() {
                     netProfit >= 0 ? "text-success" : "text-danger"
                   }`}
                 >
-                  ${netProfit.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(netProfit, 2)}
                 </span>
               </div>
               <div className="flex justify-between py-1.5 text-sm border-t border-white/5">
@@ -184,7 +184,7 @@ export default function StatementsPage() {
                     netProfit >= 0 ? "text-success" : "text-danger"
                   }`}
                 >
-                  ${netProfit.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(netProfit, 2)}
                 </span>
               </div>
               <div className="flex justify-between py-1.5 text-sm border-t border-white/5">
@@ -194,7 +194,7 @@ export default function StatementsPage() {
                     netProfit >= 0 ? "text-success" : "text-danger"
                   }`}
                 >
-                  ${netProfit.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(netProfit, 2)}
                 </span>
               </div>
             </div>

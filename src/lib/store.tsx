@@ -18,12 +18,16 @@ import type {
   Receivable,
   Payable,
 } from "./types";
+import { formatCurrency, type CurrencyCode } from "./currency";
+import { DEMO_DATA } from "./demoData";
 
 interface State {
   entries: Entry[];
   inventory: InventoryItem[];
   receivables: Receivable[];
   payables: Payable[];
+  currency: CurrencyCode;
+  loading: boolean;
 }
 
 type Action =
@@ -41,67 +45,49 @@ type Action =
   | { type: "ADD_PAYABLE"; payload: Payable }
   | { type: "UPDATE_PAYABLE"; payload: Payable }
   | { type: "DELETE_PAYABLE"; payload: string }
-  | { type: "LOAD_PAYABLES"; payload: Payable[] };
+  | { type: "LOAD_PAYABLES"; payload: Payable[] }
+  | { type: "SET_CURRENCY"; payload: CurrencyCode }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "LOAD_DEMO"; payload: { entries: Entry[]; inventory: InventoryItem[]; receivables: Receivable[]; payables: Payable[] } };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "ADD_ENTRY":
       return { ...state, entries: [action.payload, ...state.entries] };
     case "DELETE_ENTRY":
-      return {
-        ...state,
-        entries: state.entries.filter((e) => e.id !== action.payload),
-      };
+      return { ...state, entries: state.entries.filter((e) => e.id !== action.payload) };
     case "LOAD_ENTRIES":
       return { ...state, entries: action.payload };
     case "ADD_INVENTORY":
       return { ...state, inventory: [...state.inventory, action.payload] };
     case "UPDATE_INVENTORY":
-      return {
-        ...state,
-        inventory: state.inventory.map((i) =>
-          i.id === action.payload.id ? action.payload : i
-        ),
-      };
+      return { ...state, inventory: state.inventory.map((i) => (i.id === action.payload.id ? action.payload : i)) };
     case "DELETE_INVENTORY":
-      return {
-        ...state,
-        inventory: state.inventory.filter((i) => i.id !== action.payload),
-      };
+      return { ...state, inventory: state.inventory.filter((i) => i.id !== action.payload) };
     case "LOAD_INVENTORY":
       return { ...state, inventory: action.payload };
     case "ADD_RECEIVABLE":
       return { ...state, receivables: [...state.receivables, action.payload] };
     case "UPDATE_RECEIVABLE":
-      return {
-        ...state,
-        receivables: state.receivables.map((r) =>
-          r.id === action.payload.id ? action.payload : r
-        ),
-      };
+      return { ...state, receivables: state.receivables.map((r) => (r.id === action.payload.id ? action.payload : r)) };
     case "DELETE_RECEIVABLE":
-      return {
-        ...state,
-        receivables: state.receivables.filter((r) => r.id !== action.payload),
-      };
+      return { ...state, receivables: state.receivables.filter((r) => r.id !== action.payload) };
     case "LOAD_RECEIVABLES":
       return { ...state, receivables: action.payload };
     case "ADD_PAYABLE":
       return { ...state, payables: [...state.payables, action.payload] };
     case "UPDATE_PAYABLE":
-      return {
-        ...state,
-        payables: state.payables.map((p) =>
-          p.id === action.payload.id ? action.payload : p
-        ),
-      };
+      return { ...state, payables: state.payables.map((p) => (p.id === action.payload.id ? action.payload : p)) };
     case "DELETE_PAYABLE":
-      return {
-        ...state,
-        payables: state.payables.filter((p) => p.id !== action.payload),
-      };
+      return { ...state, payables: state.payables.filter((p) => p.id !== action.payload) };
     case "LOAD_PAYABLES":
       return { ...state, payables: action.payload };
+    case "SET_CURRENCY":
+      return { ...state, currency: action.payload };
+    case "SET_LOADING":
+      return { ...state, loading: action.payload };
+    case "LOAD_DEMO":
+      return { ...state, ...action.payload };
     default:
       return state;
   }
@@ -138,6 +124,12 @@ interface StoreContextValue {
   updatePayable: (p: Payable) => void;
   deletePayable: (id: string) => void;
   totalPayablesOutstanding: number;
+
+  currency: CurrencyCode;
+  setCurrency: (c: CurrencyCode) => void;
+  formatAmount: (amount: number, decimals?: number) => string;
+  loading: boolean;
+  loadDemoData: () => void;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
@@ -162,6 +154,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     inventory: [],
     receivables: [],
     payables: [],
+    currency: "PKR",
+    loading: true,
   });
 
   useEffect(() => {
@@ -173,96 +167,56 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (recv.length) dispatch({ type: "LOAD_RECEIVABLES", payload: recv });
     const pay = loadFromStorage<Payable[]>("payables", []);
     if (pay.length) dispatch({ type: "LOAD_PAYABLES", payload: pay });
+    const cur = loadFromStorage<CurrencyCode>("currency", "PKR");
+    dispatch({ type: "SET_CURRENCY", payload: cur });
+    dispatch({ type: "SET_LOADING", payload: false });
   }, []);
 
   useEffect(() => {
     saveToStorage("entries", state.entries);
   }, [state.entries]);
-
   useEffect(() => {
     saveToStorage("inventory", state.inventory);
   }, [state.inventory]);
-
   useEffect(() => {
     saveToStorage("receivables", state.receivables);
   }, [state.receivables]);
-
   useEffect(() => {
     saveToStorage("payables", state.payables);
   }, [state.payables]);
+  useEffect(() => {
+    saveToStorage("currency", state.currency);
+  }, [state.currency]);
 
-  const addEntry = useCallback(
-    (entry: Omit<Entry, "id">) =>
-      dispatch({ type: "ADD_ENTRY", payload: { ...entry, id: uuidv4() } }),
-    []
-  );
+  const addEntry = useCallback((entry: Omit<Entry, "id">) => dispatch({ type: "ADD_ENTRY", payload: { ...entry, id: uuidv4() } }), []);
+  const deleteEntry = useCallback((id: string) => dispatch({ type: "DELETE_ENTRY", payload: id }), []);
+  const addInventoryItem = useCallback((item: Omit<InventoryItem, "id">) => dispatch({ type: "ADD_INVENTORY", payload: { ...item, id: uuidv4() } }), []);
+  const updateInventoryItem = useCallback((item: InventoryItem) => dispatch({ type: "UPDATE_INVENTORY", payload: item }), []);
+  const deleteInventoryItem = useCallback((id: string) => dispatch({ type: "DELETE_INVENTORY", payload: id }), []);
+  const addReceivable = useCallback((r: Omit<Receivable, "id">) => dispatch({ type: "ADD_RECEIVABLE", payload: { ...r, id: uuidv4() } }), []);
+  const updateReceivable = useCallback((r: Receivable) => dispatch({ type: "UPDATE_RECEIVABLE", payload: r }), []);
+  const deleteReceivable = useCallback((id: string) => dispatch({ type: "DELETE_RECEIVABLE", payload: id }), []);
+  const addPayable = useCallback((p: Omit<Payable, "id">) => dispatch({ type: "ADD_PAYABLE", payload: { ...p, id: uuidv4() } }), []);
+  const updatePayable = useCallback((p: Payable) => dispatch({ type: "UPDATE_PAYABLE", payload: p }), []);
+  const deletePayable = useCallback((id: string) => dispatch({ type: "DELETE_PAYABLE", payload: id }), []);
+  const setCurrency = useCallback((c: CurrencyCode) => dispatch({ type: "SET_CURRENCY", payload: c }), []);
 
-  const deleteEntry = useCallback(
-    (id: string) => dispatch({ type: "DELETE_ENTRY", payload: id }),
-    []
-  );
+  const loadDemoData = useCallback(() => {
+    dispatch({ type: "SET_LOADING", payload: true });
+    setTimeout(() => {
+      const entries: Entry[] = DEMO_DATA.entries.map((e) => ({ ...e, id: uuidv4() }));
+      const inventory: InventoryItem[] = DEMO_DATA.inventory.map((i) => ({ ...i, id: uuidv4() }));
+      const receivables: Receivable[] = DEMO_DATA.receivables.map((r) => ({ ...r, id: uuidv4() }));
+      const payables: Payable[] = DEMO_DATA.payables.map((p) => ({ ...p, id: uuidv4() }));
+      dispatch({
+        type: "LOAD_DEMO",
+        payload: { entries, inventory, receivables, payables },
+      });
+      dispatch({ type: "SET_LOADING", payload: false });
+    }, 600);
+  }, []);
 
-  const addInventoryItem = useCallback(
-    (item: Omit<InventoryItem, "id">) =>
-      dispatch({ type: "ADD_INVENTORY", payload: { ...item, id: uuidv4() } }),
-    []
-  );
-
-  const updateInventoryItem = useCallback(
-    (item: InventoryItem) =>
-      dispatch({ type: "UPDATE_INVENTORY", payload: item }),
-    []
-  );
-
-  const deleteInventoryItem = useCallback(
-    (id: string) => dispatch({ type: "DELETE_INVENTORY", payload: id }),
-    []
-  );
-
-  const addReceivable = useCallback(
-    (r: Omit<Receivable, "id">) =>
-      dispatch({ type: "ADD_RECEIVABLE", payload: { ...r, id: uuidv4() } }),
-    []
-  );
-
-  const updateReceivable = useCallback(
-    (r: Receivable) => dispatch({ type: "UPDATE_RECEIVABLE", payload: r }),
-    []
-  );
-
-  const deleteReceivable = useCallback(
-    (id: string) => dispatch({ type: "DELETE_RECEIVABLE", payload: id }),
-    []
-  );
-
-  const addPayable = useCallback(
-    (p: Omit<Payable, "id">) =>
-      dispatch({ type: "ADD_PAYABLE", payload: { ...p, id: uuidv4() } }),
-    []
-  );
-
-  const updatePayable = useCallback(
-    (p: Payable) => dispatch({ type: "UPDATE_PAYABLE", payload: p }),
-    []
-  );
-
-  const deletePayable = useCallback(
-    (id: string) => dispatch({ type: "DELETE_PAYABLE", payload: id }),
-    []
-  );
-
-  const {
-    totalIncome,
-    totalExpenses,
-    netProfit,
-    profitMargin,
-    monthlyData,
-    categoryData,
-    entryCount,
-    totalInventoryValue,
-    totalReceivablesOutstanding,
-    totalPayablesOutstanding,
-  } = useMemo(() => {
+  const computed = useMemo(() => {
     let income = 0;
     let expenses = 0;
     const monthlyMap: Record<string, { income: number; expenses: number }> = {};
@@ -271,16 +225,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     for (const entry of state.entries) {
       if (entry.type === "income") income += entry.amount;
       else expenses += entry.amount;
-
       const month = entry.date.slice(0, 7);
       if (!monthlyMap[month]) monthlyMap[month] = { income: 0, expenses: 0 };
-      if (entry.type === "income")
-        monthlyMap[month].income += entry.amount;
+      if (entry.type === "income") monthlyMap[month].income += entry.amount;
       else monthlyMap[month].expenses += entry.amount;
-
-      if (entry.type === "expense")
-        categoryMap[entry.category] =
-          (categoryMap[entry.category] || 0) + entry.amount;
+      if (entry.type === "expense") categoryMap[entry.category] = (categoryMap[entry.category] || 0) + entry.amount;
     }
 
     const net = income - expenses;
@@ -288,28 +237,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     const monthly: MonthlyData[] = Object.entries(monthlyMap)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([month, data]) => ({
-        month: month.slice(5),
-        income: data.income,
-        expenses: data.expenses,
-      }));
+      .map(([m, d]) => ({ month: m.slice(5), income: d.income, expenses: d.expenses }));
 
-    const category: CategoryData[] = Object.entries(categoryMap)
+    const categoryArr: CategoryData[] = Object.entries(categoryMap)
       .sort(([, a], [, b]) => b - a)
       .map(([name, value]) => ({ name, value }));
 
-    const invVal = state.inventory.reduce(
-      (sum, i) => sum + i.quantity * i.unitCost,
-      0
-    );
-    const recvOut = state.receivables.reduce(
-      (sum, r) => sum + (r.amount - r.paidAmount),
-      0
-    );
-    const payOut = state.payables.reduce(
-      (sum, p) => sum + (p.amount - p.paidAmount),
-      0
-    );
+    const invVal = state.inventory.reduce((s, i) => s + i.quantity * i.unitCost, 0);
+    const recvOut = state.receivables.reduce((s, r) => s + (r.amount - r.paidAmount), 0);
+    const payOut = state.payables.reduce((s, p) => s + (p.amount - p.paidAmount), 0);
 
     return {
       totalIncome: income,
@@ -317,7 +253,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       netProfit: net,
       profitMargin: margin,
       monthlyData: monthly,
-      categoryData: category,
+      categoryData: categoryArr,
       entryCount: state.entries.length,
       totalInventoryValue: invVal,
       totalReceivablesOutstanding: recvOut,
@@ -325,37 +261,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
   }, [state]);
 
+  const formatAmount = useCallback(
+    (amount: number, decimals = 0) => formatCurrency(amount, state.currency, decimals),
+    [state.currency]
+  );
+
   return (
     <StoreContext.Provider
       value={{
         entries: state.entries,
         addEntry,
         deleteEntry,
-        totalIncome,
-        totalExpenses,
-        netProfit,
-        profitMargin,
-        monthlyData,
-        categoryData,
-        entryCount,
+        ...computed,
 
         inventory: state.inventory,
         addInventoryItem,
         updateInventoryItem,
         deleteInventoryItem,
-        totalInventoryValue,
 
         receivables: state.receivables,
         addReceivable,
         updateReceivable,
         deleteReceivable,
-        totalReceivablesOutstanding,
 
         payables: state.payables,
         addPayable,
         updatePayable,
         deletePayable,
-        totalPayablesOutstanding,
+
+        currency: state.currency,
+        setCurrency,
+        formatAmount,
+        loading: state.loading,
+        loadDemoData,
       }}
     >
       {children}

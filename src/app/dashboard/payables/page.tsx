@@ -12,6 +12,7 @@ export default function PayablesPage() {
     updatePayable,
     deletePayable,
     totalPayablesOutstanding,
+    formatAmount,
   } = useStore();
 
   const [vendorName, setVendorName] = useState("");
@@ -194,19 +195,19 @@ export default function PayablesPage() {
               <div className="text-center">
                 <p className="text-xs text-muted">Total Billed</p>
                 <p className="text-white font-semibold">
-                  ${totalBills.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(totalBills, 0)}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-xs text-muted">Paid</p>
                 <p className="text-success font-semibold">
-                  ${totalPaid.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(totalPaid, 0)}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-xs text-muted">Outstanding</p>
                 <p className="text-danger font-semibold">
-                  ${totalPayablesOutstanding.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {formatAmount(totalPayablesOutstanding, 0)}
                 </p>
               </div>
             </div>
@@ -249,10 +250,10 @@ export default function PayablesPage() {
                           {new Date(p.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </td>
                         <td className="py-3 pr-3 text-right text-white/80 font-medium">
-                          ${p.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                          {formatAmount(p.amount, 2)}
                         </td>
                         <td className={`py-3 pr-3 text-right font-medium ${overdue ? "text-danger" : "text-muted"}`}>
-                          ${outstanding.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                          {formatAmount(outstanding, 2)}
                         </td>
                         <td className="py-3 pr-3 text-center">
                           <span
