@@ -8,6 +8,15 @@ import CurrencySelector from "./CurrencySelector";
 
 const navItems = [
   {
+    href: "/",
+    label: "Home",
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+      </svg>
+    ),
+  },
+  {
     href: "/dashboard",
     label: "Overview",
     icon: (
@@ -58,20 +67,44 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  const pageTitle = (() => {
+    if (pathname === "/dashboard") return "Overview";
+    if (pathname === "/dashboard/statements") return "Statements";
+    if (pathname === "/dashboard/inventory") return "Inventory";
+    if (pathname === "/dashboard/receivables") return "Receivables";
+    if (pathname === "/dashboard/payables") return "Payables";
+    if (pathname === "/") return "Home";
+    return "Dashboard";
+  })();
+
   return (
     <>
-      <button
-        onClick={() => setOpen(!open)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 rounded-xl glass flex items-center justify-center text-muted hover:text-white transition-colors"
-      >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          {open ? (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          )}
-        </svg>
-      </button>
+      {/* Mobile top bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 glass border-b border-white/5 flex items-center justify-between px-4">
+        <Link
+          href="/"
+          className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center text-accent hover:bg-accent/20 transition-colors"
+          aria-label="Home"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+          </svg>
+        </Link>
+        <span className="text-sm font-semibold text-white">{pageTitle}</span>
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-muted hover:text-white hover:bg-white/10 transition-colors"
+          aria-label="Toggle menu"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            {open ? (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            )}
+          </svg>
+        </button>
+      </div>
 
       <AnimatePresence mode="wait">
         {(open || true) && (
@@ -79,10 +112,11 @@ export default function Sidebar() {
             initial={false}
             animate={{ width: open ? 256 : 0, opacity: 1 }}
             className={`
-              fixed top-0 left-0 z-40 h-full bg-dark border-r border-white/5
+              fixed top-0 lg:top-0 left-0 z-40 h-full bg-dark border-r border-white/5
               ${open ? "w-64" : "w-0 lg:w-64"}
               overflow-hidden lg:overflow-visible
               transition-all duration-300
+              pt-14 lg:pt-0
             `}
           >
             <div className="w-64 h-full flex flex-col">
@@ -133,6 +167,7 @@ export default function Sidebar() {
       {open && (
         <div
           className="lg:hidden fixed inset-0 z-30 bg-black/50"
+          style={{ top: "56px" }}
           onClick={() => setOpen(false)}
         />
       )}
