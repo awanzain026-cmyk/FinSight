@@ -66,7 +66,7 @@ export default function LandingPage() {
       </motion.header>
 
       <main>
-        <section className="relative min-h-screen flex items-center justify-center px-4 pt-24 pb-16 overflow-hidden">
+        <section className="relative flex items-center justify-center px-4 pt-24 pb-8 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-accent/8 via-transparent to-transparent pointer-events-none" />
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent/8 rounded-full blur-[140px] pointer-events-none" />
 
@@ -86,7 +86,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-6"
+              className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-4"
             >
               <span className="text-white">FinSight —</span>
               <br />
@@ -99,7 +99,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-base sm:text-lg text-muted max-w-2xl mx-auto mb-10 leading-relaxed"
+              className="text-base sm:text-lg text-muted max-w-2xl mx-auto mb-6 leading-relaxed"
             >
               Track income, expenses, inventory, and receivables. Get AI-powered insights and
               professional PDF reports — no accounting degree required.
@@ -127,7 +127,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="max-w-5xl mx-auto px-4 pb-24">
+        <section className="max-w-5xl mx-auto px-4 pb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

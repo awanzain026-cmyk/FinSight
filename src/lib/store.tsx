@@ -241,9 +241,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const net = income - expenses;
     const margin = income > 0 ? (net / income) * 100 : 0;
 
+    const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const monthly: MonthlyData[] = Object.entries(monthlyMap)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([m, d]) => ({ month: m.slice(5), income: d.income, expenses: d.expenses }));
+      .map(([m, d]) => ({ month: MONTH_NAMES[parseInt(m.slice(5)) - 1] || m.slice(5), income: d.income, expenses: d.expenses }));
 
     const categoryArr: CategoryData[] = Object.entries(categoryMap)
       .sort(([, a], [, b]) => b - a)

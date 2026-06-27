@@ -65,7 +65,7 @@ export function MonthlyBarChart() {
       ) : (
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} barGap={4}>
+              <BarChart data={data} barGap={4}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis
                 dataKey="month"
@@ -87,6 +87,12 @@ export function MonthlyBarChart() {
                   color: "#e2e8f0",
                   fontSize: "13px",
                 }}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: "12px", color: "#94a3b8" }}
+                formatter={(value: string) => (
+                  <span style={{ color: value === "Income" ? "#10b981" : "#ef4444" }}>{value}</span>
+                )}
               />
               <Bar
                 dataKey="Income"

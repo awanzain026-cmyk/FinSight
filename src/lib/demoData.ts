@@ -13,9 +13,9 @@ export const DEMO_DATA: DemoData = {
     { type: "income", amount: 12000, category: "Services", description: "Al-Zain Traders - Services", date: "2026-06-05T10:00:00.000Z" },
     { type: "income", amount: 8000, category: "Consulting", description: "Al-Zain Traders - Consulting", date: "2026-06-10T10:00:00.000Z" },
     { type: "expense", amount: 18000, category: "Rent", description: "Shop Rent - June", date: "2026-06-01T00:00:00.000Z" },
-    { type: "expense", amount: 25000, category: "Salaries", description: "Staff Salaries - June", date: "2026-06-28T00:00:00.000Z" },
+    { type: "expense", amount: 12000, category: "Salaries", description: "Staff Salaries - June", date: "2026-06-28T00:00:00.000Z" },
     { type: "expense", amount: 3200, category: "Utilities", description: "Electricity Bill - June", date: "2026-06-25T00:00:00.000Z" },
-    { type: "expense", amount: 15000, category: "Supplies", description: "Stock Purchase - June", date: "2026-06-10T00:00:00.000Z" },
+    { type: "expense", amount: 10000, category: "Supplies", description: "Stock Purchase - June", date: "2026-06-10T00:00:00.000Z" },
     { type: "expense", amount: 2000, category: "Miscellaneous", description: "Misc Expenses - June", date: "2026-06-20T00:00:00.000Z" },
   ],
   inventory: [
