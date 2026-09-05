@@ -1,4 +1,5 @@
 import type { Entry } from "@/lib/types";
+import { cookies } from "next/headers";
 
 const AI_API = "https://sodeom.com/v1/chat/completions";
 
@@ -14,6 +15,12 @@ export async function POST(request: Request) {
   let body: RequestBody | undefined;
 
   try {
+    const cookieStore = await cookies();
+    const session = cookieStore.get("finsight_session");
+    if (!session?.value) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     body = await request.json() as RequestBody;
 
     if (!body.entries || body.entries.length === 0) {

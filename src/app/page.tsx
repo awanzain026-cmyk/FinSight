@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+function setSession() {
+  document.cookie = "finsight_session=1; path=/; max-age=86400; SameSite=Lax";
+}
+
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -113,12 +117,14 @@ export default function LandingPage() {
             >
               <Link
                 href="/dashboard?demo=1"
+                onClick={setSession}
                 className="px-8 py-3.5 bg-accent hover:bg-accent-hover text-white font-medium rounded-xl text-base transition-all glow"
               >
                 Try Live Demo
               </Link>
               <Link
                 href="/dashboard"
+                onClick={setSession}
                 className="px-8 py-3.5 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl text-base border border-white/10 transition-all"
               >
                 Launch Dashboard
